@@ -58,6 +58,13 @@ class Checkout extends RestApi
             $user_agent = $this->getUserAgent();
             $user_accept_language = $this->getUserAcceptLanguage();
             self::$woocommerce->setOrderMeta($order_id, $this->cart_token_key_for_db, $cart_token);
+            //fallback
+
+            $order_object = self::$woocommerce->getOrder($order_id);
+            if(is_object($order_object) && !empty($order_object)) {
+                $order_object->update_meta_data($this->cart_token_key_for_db, $cart_token);
+                $order_object->save();
+            }
             self::$woocommerce->setOrderMeta($order_id, $this->cart_hash_key_for_db, $cart_hash);
             self::$woocommerce->setOrderMeta($order_id, $this->cart_tracking_started_key_for_db, $cart_created_at);
             self::$woocommerce->setOrderMeta($order_id, $this->user_ip_key_for_db, $user_ip);
@@ -157,7 +164,7 @@ class Checkout extends RestApi
                 return $http_args;
             }
 
-            self::$settings->logMessage(array("order_id" => $order_id), 'Triggering Webhook ID:'.$stored_webhook_id);
+            //self::$settings->logMessage(array("order_id" => $order_id), 'Triggering Webhook ID:'.$stored_webhook_id);
             $order_data = $order_obj->getOrderData($order);
             // $logger->add('Retainful','Order Data:'.json_encode($order_data));
             if(!empty($cart_token) && $order_data){
