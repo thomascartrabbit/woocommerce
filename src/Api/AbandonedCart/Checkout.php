@@ -57,14 +57,8 @@ class Checkout extends RestApi
             $recovered_cart_token = self::$storage->getValue('rnoc_recovered_cart_token');
             $user_agent = $this->getUserAgent();
             $user_accept_language = $this->getUserAcceptLanguage();
+            /*
             self::$woocommerce->setOrderMeta($order_id, $this->cart_token_key_for_db, $cart_token);
-            //fallback
-
-            $order_object = self::$woocommerce->getOrder($order_id);
-            if(is_object($order_object) && !empty($order_object)) {
-                $order_object->update_meta_data($this->cart_token_key_for_db, $cart_token);
-                $order_object->save();
-            }
             self::$woocommerce->setOrderMeta($order_id, $this->cart_hash_key_for_db, $cart_hash);
             self::$woocommerce->setOrderMeta($order_id, $this->cart_tracking_started_key_for_db, $cart_created_at);
             self::$woocommerce->setOrderMeta($order_id, $this->user_ip_key_for_db, $user_ip);
@@ -74,6 +68,23 @@ class Checkout extends RestApi
             self::$woocommerce->setOrderMeta($order_id, '_rnoc_recovered_cart_token', $recovered_cart_token);
             self::$woocommerce->setOrderMeta($order_id, '_rnoc_get_http_user_agent', $user_agent);
             self::$woocommerce->setOrderMeta($order_id, '_rnoc_get_http_accept_language', $user_accept_language);
+            */
+
+            $order_object = self::$woocommerce->getOrder($order_id);
+            if(is_object($order_object) && !empty($order_object)) {
+                $order_object->update_meta_data($this->cart_token_key_for_db, $cart_token);
+                $order_object->update_meta_data($this->cart_hash_key_for_db, $cart_hash);
+                $order_object->update_meta_data($this->cart_tracking_started_key_for_db, $cart_created_at);
+                $order_object->update_meta_data($this->user_ip_key_for_db, $user_ip);
+                $order_object->update_meta_data($this->accepts_marketing_key_for_db, $is_buyer_accepts_marketing);
+                $order_object->update_meta_data('_rnoc_recovered_at', $recovered_at);
+                $order_object->update_meta_data( '_rnoc_recovered_by', $recovered_by);
+                $order_object->update_meta_data( '_rnoc_recovered_cart_token', $recovered_cart_token);
+                $order_object->update_meta_data( '_rnoc_get_http_user_agent', $user_agent);
+                $order_object->update_meta_data( '_rnoc_get_http_accept_language', $user_accept_language);
+                $order_object->save();
+            }
+
             $this->markOrderAsPendingRecovery($order_id);
             //$this->unsetOrderTempData();
         }
