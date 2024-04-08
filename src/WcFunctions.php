@@ -243,12 +243,10 @@ class WcFunctions
     function getOrderMeta($order, $meta_key)
     {
         $meta_value = null;
-        //$order_id = $this->getOrderId($order);
         if(is_object($order) && method_exists($order, 'get_meta')) {
             $meta_value = $order->get_meta($meta_key);
         }
         return $meta_value;
-        //return get_post_meta(intval($order_id), $meta_key, true);
     }
 
     /**

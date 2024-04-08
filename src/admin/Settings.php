@@ -378,7 +378,7 @@ class Settings
         global $post_ID;
         $order = wc_get_order($post_ID);
         $order_id = $this->wc_functions->getOrderId($order);
-        echo '<p>' . get_post_meta($order_id, "_rnoc_user_cart_token", true) . '</p>';
+        echo '<p>' . $this->wc_functions->getOrderMeta($order, "_rnoc_user_cart_token") . '</p>';
     }
 
     /**

@@ -57,18 +57,6 @@ class Checkout extends RestApi
             $recovered_cart_token = self::$storage->getValue('rnoc_recovered_cart_token');
             $user_agent = $this->getUserAgent();
             $user_accept_language = $this->getUserAcceptLanguage();
-            /*
-            self::$woocommerce->setOrderMeta($order_id, $this->cart_token_key_for_db, $cart_token);
-            self::$woocommerce->setOrderMeta($order_id, $this->cart_hash_key_for_db, $cart_hash);
-            self::$woocommerce->setOrderMeta($order_id, $this->cart_tracking_started_key_for_db, $cart_created_at);
-            self::$woocommerce->setOrderMeta($order_id, $this->user_ip_key_for_db, $user_ip);
-            self::$woocommerce->setOrderMeta($order_id, $this->accepts_marketing_key_for_db, $is_buyer_accepts_marketing);
-            self::$woocommerce->setOrderMeta($order_id, '_rnoc_recovered_at', $recovered_at);
-            self::$woocommerce->setOrderMeta($order_id, '_rnoc_recovered_by', $recovered_by);
-            self::$woocommerce->setOrderMeta($order_id, '_rnoc_recovered_cart_token', $recovered_cart_token);
-            self::$woocommerce->setOrderMeta($order_id, '_rnoc_get_http_user_agent', $user_agent);
-            self::$woocommerce->setOrderMeta($order_id, '_rnoc_get_http_accept_language', $user_accept_language);
-            */
 
             $order_object = self::$woocommerce->getOrder($order_id);
             if(is_object($order_object) && !empty($order_object)) {
@@ -82,10 +70,11 @@ class Checkout extends RestApi
                 $order_object->update_meta_data( '_rnoc_recovered_cart_token', $recovered_cart_token);
                 $order_object->update_meta_data( '_rnoc_get_http_user_agent', $user_agent);
                 $order_object->update_meta_data( '_rnoc_get_http_accept_language', $user_accept_language);
+                $order_object->update_meta_data($this->pending_recovery_key_for_db, true);
                 $order_object->save();
             }
 
-            $this->markOrderAsPendingRecovery($order_id);
+            //$this->markOrderAsPendingRecovery($order_id);
             //$this->unsetOrderTempData();
         }
         return NULL;
@@ -165,7 +154,8 @@ class Checkout extends RestApi
                 if ($force_generate_cart_token === true) {
                     //Let's generate a token and set to the order meta
                     $cart_token = $this->generateCartToken();
-                    self::$woocommerce->setOrderMeta($order_id, $this->cart_token_key_for_db, $cart_token);
+                    $order->update_meta_data($this->cart_token_key_for_db, $cart_token);
+                    $order->save();
                     self::$settings->logMessage(array("cart_token" => $cart_token), 'Force Generated Cart Token');
                 }
             }
@@ -296,7 +286,8 @@ class Checkout extends RestApi
                 if ((self::$woocommerce->isOrderPaid($order) || $new_status == 'on-hold') && ($user_id = self::$woocommerce->getOrderUserId($order))) {
                     delete_user_meta($user_id, '_woocommerce_persistent_cart_' . get_current_blog_id());
                     if ($this->isPendingRecovery($user_id)) {
-                        $this->markOrderAsPendingRecovery($order_id);
+                        $order->update_meta_data($this->pending_recovery_key_for_db, true);
+                        $order->save();
                     }
                     if ($this->retrieveCartToken($user_id)) {
                         $this->removeTempDataForUser($user_id);
@@ -336,9 +327,9 @@ class Checkout extends RestApi
     function checkoutOrderProcessed($order_id)
     {
         self::$settings->logMessage(array("order_id" => $order_id), 'checkoutOrderProcessed');
-        if ($this->isPendingRecovery()) {
+       /* if ($this->isPendingRecovery()) {
             $this->markOrderAsPendingRecovery($order_id);
-        }
+        }*/
         try {
             $cart_token = $this->retrieveCartToken();
             if (!empty($cart_token)) {

@@ -58,8 +58,12 @@ class AfterPay
         }
         if ( $order_id > 0 &&  (int)$order_id === $this->quote_id ) {
             $wc_function = new WcFunctions();
-            foreach ( $this->retainful_meta as $key => $value ) {
-                $wc_function->setOrderMeta($order_id,$key,$value);
+            $order_object = $wc_function->getOrder($order_id);
+            if(is_object($order_object) && !empty($order_object)) {
+                foreach ($this->retainful_meta as $key => $value) {
+                    $order_object->update_meta_data($key, $value);
+                }
+                $order_object->save();
             }
         }
     }
