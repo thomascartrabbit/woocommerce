@@ -61,9 +61,8 @@ class AfterPay
             $order_object = $wc_function->getOrder($order_id);
             if(is_object($order_object) && !empty($order_object)) {
                 foreach ($this->retainful_meta as $key => $value) {
-                    $order_object->update_meta_data($key, $value);
+                    $wc_function->setOrderMeta($order_id,$key,$value);
                 }
-                $order_object->save();
             }
         }
     }

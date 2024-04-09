@@ -154,8 +154,7 @@ class Checkout extends RestApi
                 if ($force_generate_cart_token === true) {
                     //Let's generate a token and set to the order meta
                     $cart_token = $this->generateCartToken();
-                    $order->update_meta_data($this->cart_token_key_for_db, $cart_token);
-                    $order->save();
+                    self::$woocommerce->setOrderMeta($order_id, $this->cart_token_key_for_db, $cart_token);
                     self::$settings->logMessage(array("cart_token" => $cart_token), 'Force Generated Cart Token');
                 }
             }
@@ -286,8 +285,7 @@ class Checkout extends RestApi
                 if ((self::$woocommerce->isOrderPaid($order) || $new_status == 'on-hold') && ($user_id = self::$woocommerce->getOrderUserId($order))) {
                     delete_user_meta($user_id, '_woocommerce_persistent_cart_' . get_current_blog_id());
                     if ($this->isPendingRecovery($user_id)) {
-                        $order->update_meta_data($this->pending_recovery_key_for_db, true);
-                        $order->save();
+                        self::$woocommerce->setOrderMeta($order_id, $this->pending_recovery_key_for_db, true);
                     }
                     if ($this->retrieveCartToken($user_id)) {
                         $this->removeTempDataForUser($user_id);
