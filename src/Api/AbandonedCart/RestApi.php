@@ -445,7 +445,7 @@ class RestApi
         if (!$order instanceof \WC_Order) {
             return false;
         }
-        return (bool) get_post_meta($order_id, $this->pending_recovery_key_for_db, true);
+        return (bool) self::$woocommerce->getOrderMeta($order, $this->pending_recovery_key_for_db);
     }
 
     /**
@@ -459,7 +459,7 @@ class RestApi
         if (!$order instanceof \WC_Order) {
             return false;
         }
-        return (bool) get_post_meta($order_id, $this->order_recovered_key_for_db, true);
+        return (bool) self::$woocommerce->getOrderMeta($order, $this->order_recovered_key_for_db);
     }
 
     /**
