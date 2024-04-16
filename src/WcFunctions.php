@@ -276,11 +276,11 @@ class WcFunctions
      * @param $order_id
      * @param $meta_key
      * @param $meta_value
-     * @return null
+     * @return void
      */
     function setOrderMeta($order_id, $meta_key, $meta_value)
     {
-        if (!empty($meta_key)) {
+        if (!empty($order_id) && !empty($meta_key)) {
             $order = self::getOrder(intval($order_id));
             $order->update_meta_data($meta_key, $meta_value);
             $order->save_meta_data();
