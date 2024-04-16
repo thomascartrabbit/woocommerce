@@ -410,6 +410,7 @@ function initJqueryRetainfulAbandonedCartsTracking(rnoc_cart_js_data) {
                 shipping_postcode: $('#shipping_postcode').val(),
                 shipping_country: $('#shipping_country').val(),
                 allow_gdpr: $('input#rnoc_allow_gdpr').is(':checked'),
+                cart_token: localStorage.getItem('retainful_ac_cart_token'),
                 action: 'rnoc_track_user_data'
             };
             updateCheckout(rnoc_email, rnoc_phone, guest_data);
@@ -428,6 +429,7 @@ function initJqueryRetainfulAbandonedCartsTracking(rnoc_cart_js_data) {
                 billing_email: rnoc_email,
                 allow_gdpr: $('.wp-block-woocommerce-checkout #rnoc_allow_gdpr').is(':checked'),
                 ship_to_billing: 1,
+                cart_token: localStorage.getItem('retainful_ac_cart_token'),
                 action: 'rnoc_track_user_data'
             };
             updateCheckout(rnoc_email, rnoc_phone, guest_data);
