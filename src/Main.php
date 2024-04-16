@@ -27,11 +27,11 @@ class Main
     {
         $this->rnoc = ($this->rnoc == NULL) ? new OrderCoupon() : $this->rnoc;
         $this->admin = ($this->admin == NULL) ? new Settings() : $this->admin;
-        add_filter('woocommerce_set_cookie_options',array($this,'changeIdentityPath'),10,3);
+        add_filter('woocommerce_set_cookie_options', array($this, 'changeIdentityPath'), 10, 3);
         add_action('init', array($this, 'activateEvents'));
         add_action('woocommerce_init', array($this, 'includePluginFiles'));
         //add_action('woocommerce_init',array($this->admin,'createWebhook'));
-        add_action('woocommerce_init',array($this->admin,'setIdentityData'));
+        add_action('woocommerce_init', array($this->admin, 'setIdentityData'));
         //init the retainful premium
         new \Rnoc\Retainful\Premium\RetainfulPremiumMain();
     }
@@ -44,9 +44,9 @@ class Main
      * @param $value
      * @return mixed
      */
-    function changeIdentityPath($option,$name,$value)
+    function changeIdentityPath($option, $name, $value)
     {
-        if($name == '_wc_rnoc_tk_session'){
+        if ($name == '_wc_rnoc_tk_session') {
             $option['path'] = $this->admin->getIdentityPath();
         }
         return $option;
@@ -85,17 +85,18 @@ class Main
         ));
     }
 
-    function registerSyncEndPoints(){
+    function registerSyncEndPoints()
+    {
         $import = new Imports();
         register_rest_route('retainful-api/v1', '/orders', array(
             'methods' => 'GET',
             'permission_callback' => '__return_true',
-            'callback' => array($import,'getSyncOrders')
+            'callback' => array($import, 'getSyncOrders')
         ));
         register_rest_route('retainful-api/v1', '/orders/count', array(
             'methods' => 'GET',
             'permission_callback' => '__return_true',
-            'callback' => array($import,'getSyncOrderCount')
+            'callback' => array($import, 'getSyncOrderCount')
         ));
     }
 
@@ -198,9 +199,9 @@ class Main
         //initialise currency helper
         new Currency();
         $can_hide_next_order_coupon = get_option('retainful_hide_next_order_coupon', 'no');
-        $show_deprecate_message = isset($_REQUEST['page']) && in_array($_REQUEST['page'],array('retainful_license','retainful_settings','retainful','retainful_premium'));
+        $show_deprecate_message = isset($_REQUEST['page']) && in_array($_REQUEST['page'], array('retainful_license', 'retainful_settings', 'retainful', 'retainful_premium'));
         if (is_admin() && $show_deprecate_message && $this->admin->isNextOrderCouponEnabled() && $can_hide_next_order_coupon == 'no') {
-            $notice = '<p>' .__("The Next Order Coupon feature inside the plugin and its tab/menu will soon be removed from the Retainful plugin. Migrate your Next Order Coupon campaign to the Automations now. A detailed guide <a href='https://help.retainful.com/migration#next-order-coupon' target='_blank'>here</a>", RNOC_TEXT_DOMAIN) . '</p>';
+            $notice = '<p>' . __("The Next Order Coupon feature inside the plugin and its tab/menu will soon be removed from the Retainful plugin. Migrate your Next Order Coupon campaign to the Automations now. A detailed guide <a href='https://help.retainful.com/migration#next-order-coupon' target='_blank'>here</a>", RNOC_TEXT_DOMAIN) . '</p>';
             $this->showAdminNotice($notice);
         }
         if ($this->admin->isNextOrderCouponEnabled()) {
@@ -266,7 +267,7 @@ class Main
                 $need_referral_program = $this->admin->needReferralWidget();
                 $need_popup_widget = $this->admin->needPopupWidget();
                 if ($this->admin->isProPlan() && ($need_referral_program || $need_popup_widget)) {
-                    if($need_referral_program){
+                    if ($need_referral_program) {
                         $referral_program = new ReferralManagement();
                         add_action('wp_footer', array($referral_program, 'printReferralPopup'));
                         $need_embeded_referral_program = $this->admin->needEmbededReferralWidget();
@@ -274,7 +275,7 @@ class Main
                             add_action('woocommerce_account_dashboard', array($referral_program, 'printEmbededReferralPopup'));
                         }
                     }
-                    if($need_popup_widget){
+                    if ($need_popup_widget) {
                         $popup = new Popup();
                         add_action('user_register', array($popup, 'userRegister'));
                         add_action('wp_login', array($popup, 'userLogin'), 10, 2);
@@ -301,7 +302,7 @@ class Main
                     add_action('woocommerce_before_shop_loop', array($cart, 'userGdprMessage'), 10);
                 }*/
                 add_filter('woocommerce_checkout_fields', array($cart, 'guestGdprMessage'), 10, 1);
-                add_action('woocommerce_checkout_after_terms_and_conditions',array($cart,'guestTermGdprMessage'));
+                add_action('woocommerce_checkout_after_terms_and_conditions', array($cart, 'guestTermGdprMessage'));
                 add_action('wp_footer', array($checkout, 'setRetainfulOrderData'));
                 add_filter('rnoc_can_track_abandoned_carts', array($cart, 'isZeroValueCart'), 15, 2);
                 $cart_tracking_engine = $this->admin->getCartTrackingEngine();
@@ -324,7 +325,8 @@ class Main
                 add_action('woocommerce_thankyou', array($checkout, 'payPageOrderCompletion'));
                 add_action('woocommerce_payment_complete', array($checkout, 'paymentCompleted'));
                 add_action('woocommerce_checkout_update_order_meta', array($checkout, 'checkoutOrderProcessed'));
-          //      add_filter('woocommerce_payment_successful_result', array($checkout, 'maybeUpdateOrderOnSuccessfulPayment'), 10, 2);
+                add_action('woocommerce_store_api_checkout_update_order_meta', array($checkout, 'apiCheckoutOrderProcessed'));
+                //      add_filter('woocommerce_payment_successful_result', array($checkout, 'maybeUpdateOrderOnSuccessfulPayment'), 10, 2);
                 // handle updating Retainful order data after a successful payment, for certain gateways
                 add_action('woocommerce_order_status_changed', array($checkout, 'orderStatusChanged'), 15, 3);
                 // handle placed orders
@@ -333,10 +335,10 @@ class Main
                 add_action('woocommerce_process_shop_order_meta', array($checkout, 'OrderUpdatedShopBackend'), 50, 2);
 
                 //add_action('woocommerce_update_order', array($checkout, 'orderUpdated'), 10, 1);
-                add_filter('woocommerce_webhook_http_args',array($checkout,'changeWebHookHeader'),10,3);
+                add_filter('woocommerce_webhook_http_args', array($checkout, 'changeWebHookHeader'), 10, 3);
                 //Todo: multi currency and multi lingual
                 //add_action('wp_login', array($this->abandoned_cart_api, 'userCartUpdated'));
-                if($this->admin->isAfterPayEnabled()){
+                if ($this->admin->isAfterPayEnabled()) {
                     new AfterPay();
                 }
 
@@ -397,7 +399,6 @@ class Main
     }
 
 
-
     /**
      * Remove all actions without any knowledge
      */
@@ -430,7 +431,7 @@ class Main
             $api_obj = new RestApi();
             $store_data = array(
                 'secret_key' => $api_obj->encryptData($api_key, $secret_key));
-            $this->admin->isApiEnabled($api_key, $secret_key,$store_data);
+            $this->admin->isApiEnabled($api_key, $secret_key, $store_data);
         } else {
             $this->admin->updateUserAsFreeUser();
         }
