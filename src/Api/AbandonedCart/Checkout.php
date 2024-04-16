@@ -59,17 +59,17 @@ class Checkout extends RestApi
             $user_accept_language = $this->getUserAcceptLanguage();
 
             $order_object = self::$woocommerce->getOrder($order_id);
-            if(is_object($order_object) && !empty($order_object)) {
+            if (is_object($order_object) && !empty($order_object)) {
                 $order_object->update_meta_data($this->cart_token_key_for_db, $cart_token);
                 $order_object->update_meta_data($this->cart_hash_key_for_db, $cart_hash);
                 $order_object->update_meta_data($this->cart_tracking_started_key_for_db, $cart_created_at);
                 $order_object->update_meta_data($this->user_ip_key_for_db, $user_ip);
                 $order_object->update_meta_data($this->accepts_marketing_key_for_db, $is_buyer_accepts_marketing);
                 $order_object->update_meta_data('_rnoc_recovered_at', $recovered_at);
-                $order_object->update_meta_data( '_rnoc_recovered_by', $recovered_by);
-                $order_object->update_meta_data( '_rnoc_recovered_cart_token', $recovered_cart_token);
-                $order_object->update_meta_data( '_rnoc_get_http_user_agent', $user_agent);
-                $order_object->update_meta_data( '_rnoc_get_http_accept_language', $user_accept_language);
+                $order_object->update_meta_data('_rnoc_recovered_by', $recovered_by);
+                $order_object->update_meta_data('_rnoc_recovered_cart_token', $recovered_cart_token);
+                $order_object->update_meta_data('_rnoc_get_http_user_agent', $user_agent);
+                $order_object->update_meta_data('_rnoc_get_http_accept_language', $user_accept_language);
                 $order_object->update_meta_data($this->pending_recovery_key_for_db, true);
                 $order_object->save();
             }
@@ -125,20 +125,21 @@ class Checkout extends RestApi
         return apply_filters('rnoc_generate_noc_coupon_for_manual_orders', $need_noc_coupon, $this);
     }
 
-    function changeWebHookHeader($http_args, $order_id, $webhook_id){
+    function changeWebHookHeader($http_args, $order_id, $webhook_id)
+    {
 
-        if($webhook_id <= 0 || !class_exists('WC_Webhook') || !self::$settings->isConnectionActive()) return $http_args;
+        if ($webhook_id <= 0 || !class_exists('WC_Webhook') || !self::$settings->isConnectionActive()) return $http_args;
 
         try {
-            $webhook = new \WC_Webhook( $webhook_id );
+            $webhook = new \WC_Webhook($webhook_id);
             $topic = $webhook->get_topic();
             $topic_status = self::$settings->getWebHookStatus();
-            if( !isset($topic_status[$topic]) || !$topic_status[$topic]){
+            if (!isset($topic_status[$topic]) || !$topic_status[$topic]) {
                 return $http_args;
             }
             $delivery_url = $webhook->get_delivery_url();
-            $site_delivery_url =  self::$settings->getDeliveryUrl();
-            if($delivery_url != $site_delivery_url ||  $order_id <= 0){
+            $site_delivery_url = self::$settings->getDeliveryUrl();
+            if ($delivery_url != $site_delivery_url || $order_id <= 0) {
                 return $http_args;
             }
 
@@ -147,7 +148,7 @@ class Checkout extends RestApi
             $cart_token = self::$woocommerce->getOrderMeta($order, $this->cart_token_key_for_db);
             self::$settings->logMessage(array("cart_token" => $cart_token), 'Cart Token');
 
-            if(empty($cart_token)) {
+            if (empty($cart_token)) {
                 //Usually we should not force generate the cart token as this would sync all the old orders otherwise, if their status changes.
                 $force_generate_cart_token = apply_filters('rnoc_force_generate_cart_token', false, $http_args, $order_id, $webhook_id);
 
@@ -159,7 +160,7 @@ class Checkout extends RestApi
                 }
             }
 
-            if(empty($cart_token)) {
+            if (empty($cart_token)) {
                 //bail on empty cart token
                 return $http_args;
             }
@@ -167,7 +168,7 @@ class Checkout extends RestApi
             //self::$settings->logMessage(array("order_id" => $order_id), 'Triggering Webhook ID:'.$stored_webhook_id);
             $order_data = $order_obj->getOrderData($order);
             // $logger->add('Retainful','Order Data:'.json_encode($order_data));
-            if(!empty($cart_token) && $order_data){
+            if (!empty($cart_token) && $order_data) {
                 $client_ip = self::$woocommerce->getOrderMeta($order, $this->user_ip_key_for_db);
                 $token = self::$woocommerce->getOrderMeta($order, $this->cart_token_key_for_db);
                 $app_id = self::$settings->getApiKey();
@@ -180,7 +181,7 @@ class Checkout extends RestApi
                     "app_id" => $app_id,
                     "Content-Type" => 'application/json'
                 );
-                foreach ($extra_headers as $key => $value){
+                foreach ($extra_headers as $key => $value) {
                     $http_args['headers'][$key] = $value;
                 }
                 //$logger->add('Retainful','App id:'.$app_id);
@@ -188,9 +189,9 @@ class Checkout extends RestApi
                 $body = array(
                     'data' => $cart_hash
                 );
-                $http_args['body'] = trim( wp_json_encode( $body ) );
+                $http_args['body'] = trim(wp_json_encode($body));
             }
-        }catch (Exception $e){
+        } catch (Exception $e) {
 
         }
         return $http_args;
@@ -209,7 +210,7 @@ class Checkout extends RestApi
         $order = self::$woocommerce->getOrder($order_id);
         $order_obj = new Order();
         $cart_token = self::$woocommerce->getOrderMeta($order, $this->cart_token_key_for_db);
-        $cart_token = apply_filters('rnoc_sync_order_change_order_token',$cart_token,$order_id,$this);
+        $cart_token = apply_filters('rnoc_sync_order_change_order_token', $cart_token, $order_id, $this);
         if (empty($cart_token)) {
             return;
         }
@@ -256,7 +257,7 @@ class Checkout extends RestApi
      */
     function scheduleCartSync($order_id)
     {
-        if(!apply_filters('rnoc_schedule_cart_sync',true)){
+        if (!apply_filters('rnoc_schedule_cart_sync', true)) {
             return;
         }
         $hook = 'retainful_sync_abandoned_cart_order';
@@ -325,13 +326,35 @@ class Checkout extends RestApi
     function checkoutOrderProcessed($order_id)
     {
         self::$settings->logMessage(array("order_id" => $order_id), 'checkoutOrderProcessed');
-       /* if ($this->isPendingRecovery()) {
-            $this->markOrderAsPendingRecovery($order_id);
-        }*/
+        /* if ($this->isPendingRecovery()) {
+             $this->markOrderAsPendingRecovery($order_id);
+         }*/
         try {
             $cart_token = $this->retrieveCartToken();
             if (!empty($cart_token)) {
                 $order = self::$woocommerce->getOrder($order_id);
+                $this->purchaseComplete($order_id);
+                $this->syncOrderToAPI($order, $order_id);
+                //$this->unsetOrderTempData();
+            }
+        } catch (Exception $e) {
+        }
+    }
+
+    function apiCheckoutOrderProcessed($order)
+    {
+        if (!is_object($order)) {
+            return;
+        }
+        $order_id = self::$woocommerce->getOrderId($order);
+        self::$settings->logMessage(array("order_id" => $order_id), 'checkoutOrderProcessed');
+        /* if ($this->isPendingRecovery()) {
+             $this->markOrderAsPendingRecovery($order_id);
+         }*/
+        try {
+            $cart_token = $this->retrieveCartToken();
+            if (!empty($cart_token)) {
+                //$order = self::$woocommerce->getOrder($order_id);
                 $this->purchaseComplete($order_id);
                 $this->syncOrderToAPI($order, $order_id);
                 //$this->unsetOrderTempData();
@@ -347,7 +370,7 @@ class Checkout extends RestApi
      */
     function syncOrderToAPI($order, $order_id)
     {
-        if(self::$settings->isBackgroundOrderSyncEnabled()){
+        if (self::$settings->isBackgroundOrderSyncEnabled()) {
             return;
         }
         if ($this->needInstantOrderSync()) {
@@ -358,7 +381,7 @@ class Checkout extends RestApi
                 //Reduce the loading speed
                 $client_ip = self::$woocommerce->getOrderMeta($order, $this->user_ip_key_for_db);
                 $token = self::$woocommerce->getOrderMeta($order, $this->cart_token_key_for_db);
-                self::$settings->logMessage(array('order_id'=>$order_id, 'token' => $token, 'client_ip' => $client_ip), 'syncOrderToAPI');
+                self::$settings->logMessage(array('order_id' => $order_id, 'token' => $token, 'client_ip' => $client_ip), 'syncOrderToAPI');
                 if (!empty($cart_hash)) {
 
                     $extra_headers = array(
@@ -370,7 +393,7 @@ class Checkout extends RestApi
                     $this->syncCart($cart_hash, $extra_headers);
                 }
             } else {
-                self::$settings->logMessage(array('order_id'=>$order_id), 'Failed syncOrderToAPI');
+                self::$settings->logMessage(array('order_id' => $order_id), 'Failed syncOrderToAPI');
             }
         } else {
             $this->scheduleCartSync($order_id);

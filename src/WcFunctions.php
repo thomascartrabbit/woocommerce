@@ -243,7 +243,7 @@ class WcFunctions
     function getOrderMeta($order, $meta_key)
     {
         $meta_value = null;
-        if(is_object($order) && method_exists($order, 'get_meta')) {
+        if (is_object($order) && method_exists($order, 'get_meta')) {
             $meta_value = $order->get_meta($meta_key);
         }
         return $meta_value;
@@ -281,15 +281,10 @@ class WcFunctions
     function setOrderMeta($order_id, $meta_key, $meta_value)
     {
         if (!empty($meta_key)) {
-            if(\Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled()) {
-                $order = self::getOrder(intval($order_id));
-                $order->update_meta_data($meta_key, $meta_value);
-                $order->save_meta_data();
-                return true;
-            }
-            return update_post_meta(intval($order_id), $meta_key, $meta_value);
+            $order = self::getOrder(intval($order_id));
+            $order->update_meta_data($meta_key, $meta_value);
+            $order->save_meta_data();
         }
-        return null;
     }
 
     /**
@@ -562,7 +557,7 @@ class WcFunctions
         $date = null;
         if ($this->isMethodExists($order, 'get_date_paid')) {
             $dateObject = $order->get_date_paid();
-            if(is_object($dateObject) && $dateObject instanceof \WC_DateTime) {
+            if (is_object($dateObject) && $dateObject instanceof \WC_DateTime) {
                 $date = $dateObject->getTimestamp();
             }
             if (!is_null($format)) {
@@ -732,16 +727,17 @@ class WcFunctions
         }
     }
 
-    function getUserRoles($email) {
-        if(empty($email)){
+    function getUserRoles($email)
+    {
+        if (empty($email)) {
             return array();
         }
         try {
-            $user = get_user_by( 'email', sanitize_email($email) );
-            if($user && is_object($user) && isset($user->roles)){
-                return ( array ) $user->roles;
+            $user = get_user_by('email', sanitize_email($email));
+            if ($user && is_object($user) && isset($user->roles)) {
+                return ( array )$user->roles;
             }
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
 
         }
         return array();
@@ -753,7 +749,7 @@ class WcFunctions
      */
     function hasSession()
     {
-        if ( is_null( WC()->session )) {
+        if (is_null(WC()->session)) {
             return false;
         }
         if ($this->isMethodExists(WC()->session, 'has_session')) {
@@ -1439,12 +1435,13 @@ class WcFunctions
         return array();
     }
 
-    function getProductCategoryName($product_id){
-        if(empty($product_id)){
+    function getProductCategoryName($product_id)
+    {
+        if (empty($product_id)) {
             return array();
         }
-        $terms = get_the_terms( $product_id, 'product_cat' );
-        return ( empty( $terms ) || is_wp_error( $terms ) ) ? array() : wp_list_pluck( $terms, 'name' );
+        $terms = get_the_terms($product_id, 'product_cat');
+        return (empty($terms) || is_wp_error($terms)) ? array() : wp_list_pluck($terms, 'name');
     }
 
     /**
@@ -1919,16 +1916,17 @@ class WcFunctions
         return false;
     }
 
-    function canApplyCoupon($coupon_code,$order){
-        if(empty($coupon_code) || !$this->isMethodExists($order, "get_items")){
+    function canApplyCoupon($coupon_code, $order)
+    {
+        if (empty($coupon_code) || !$this->isMethodExists($order, "get_items")) {
             return false;
         }
-        $new_coupon = new \WC_Coupon( $coupon_code );
+        $new_coupon = new \WC_Coupon($coupon_code);
         if (!$this->isMethodExists($new_coupon, "get_individual_use")) {
             return false;
         }
-        $applied_coupons = $order->get_items( 'coupon' );
-        if($new_coupon->get_individual_use() && count($applied_coupons)) {
+        $applied_coupons = $order->get_items('coupon');
+        if ($new_coupon->get_individual_use() && count($applied_coupons)) {
             return false;
         }
         return true;
@@ -1942,9 +1940,9 @@ class WcFunctions
 
     function applyCouponToOrder($coupon, $order)
     {
-        if ($this->isValidCoupon($coupon) && $this->isMethodExists($order, "apply_coupon") && $this->canApplyCoupon($coupon,$order)) {
+        if ($this->isValidCoupon($coupon) && $this->isMethodExists($order, "apply_coupon") && $this->canApplyCoupon($coupon, $order)) {
             $result = $order->apply_coupon($coupon);
-            if($result === true) {
+            if ($result === true) {
                 return true;
             }
         }
@@ -1961,13 +1959,13 @@ class WcFunctions
         $count = 0;
         if (!empty($email) && is_email($email)) {
             global $wpdb;
-            if(!$this->isHPOSEnabled()){
+            if (!$this->isHPOSEnabled()) {
                 $query = $wpdb->prepare("SELECT COUNT(*) as total FROM {$wpdb->prefix}posts as p 
                 LEFT JOIN {$wpdb->prefix}postmeta as pm ON pm.post_id = p.id 
-                WHERE pm.meta_key=%s AND pm.meta_value=%s AND p.post_type=%s",array('_billing_email',$email,'shop_order'));
-            }else{
-                $query =  $wpdb->prepare("SELECT COUNT(*) as total FROM {$wpdb->prefix}wc_orders 
-                         WHERE billing_email = %s",array($email));
+                WHERE pm.meta_key=%s AND pm.meta_value=%s AND p.post_type=%s", array('_billing_email', $email, 'shop_order'));
+            } else {
+                $query = $wpdb->prepare("SELECT COUNT(*) as total FROM {$wpdb->prefix}wc_orders 
+                         WHERE billing_email = %s", array($email));
             }
             $count = $wpdb->get_var($query);
             /*$customer_orders = $this->getCustomerOrdersByEmail($email);
@@ -1978,15 +1976,17 @@ class WcFunctions
         return (int)$count;
     }
 
-    function getCustomerLastOrderId($email){
+    function getCustomerLastOrderId($email)
+    {
         if (!empty($email) && is_email($email)) {
-            $customer_orders = $this->getCustomerOrdersByEmail($email,1);
-            if(!empty($customer_orders)){
-                return isset($customer_orders[0]) && !empty($customer_orders[0]) && is_object($customer_orders[0]) && method_exists($customer_orders[0],'get_id') ? $customer_orders[0]->get_id() : null;
+            $customer_orders = $this->getCustomerOrdersByEmail($email, 1);
+            if (!empty($customer_orders)) {
+                return isset($customer_orders[0]) && !empty($customer_orders[0]) && is_object($customer_orders[0]) && method_exists($customer_orders[0], 'get_id') ? $customer_orders[0]->get_id() : null;
             }
         }
         return null;
     }
+
     /**
      * get the total orders from session
      * @param $email
@@ -2023,13 +2023,13 @@ class WcFunctions
         $sum = 0;
         if (!empty($email) && is_email($email) && empty($sum)) {
             global $wpdb;
-            if(!$this->isHPOSEnabled()){
+            if (!$this->isHPOSEnabled()) {
                 $query = $wpdb->prepare("SELECT SUM(pm1.meta_value) as total FROM {$wpdb->prefix}posts as p 
     LEFT JOIN {$wpdb->prefix}postmeta as pm ON pm.post_id = p.id
          LEFT JOIN {$wpdb->prefix}postmeta as pm1 ON pm1.post_id = p.id
-         WHERE pm.meta_key=%s AND pm.meta_value=%s AND pm1.meta_key = %s AND p.post_type=%s",array('_billing_email',$email,'_order_total','shop_order'));
-            }else{
-                $query =  $wpdb->prepare("SELECT SUM(total_amount) as total FROM {$wpdb->prefix}wc_orders WHERE billing_email = %s",array($email));
+         WHERE pm.meta_key=%s AND pm.meta_value=%s AND pm1.meta_key = %s AND p.post_type=%s", array('_billing_email', $email, '_order_total', 'shop_order'));
+            } else {
+                $query = $wpdb->prepare("SELECT SUM(total_amount) as total FROM {$wpdb->prefix}wc_orders WHERE billing_email = %s", array($email));
             }
             $sum = $wpdb->get_var($query);
             /*$customer_orders = $this->getCustomerOrdersByEmail($email);
@@ -2077,7 +2077,7 @@ class WcFunctions
      * @param int $limit
      * @return array
      */
-    function getCustomerOrdersByEmail($email,$limit = -1)
+    function getCustomerOrdersByEmail($email, $limit = -1)
     {
         if (!empty($email) && is_email($email)) {
             $args = array(
@@ -2093,9 +2093,10 @@ class WcFunctions
         }
     }
 
-    public static function checkSecuritykey($security_name){
+    public static function checkSecuritykey($security_name)
+    {
         $message = __('Security check failed', RNOC_TEXT_DOMAIN);
-        if(empty($security_name)) wp_send_json_error($message);
+        if (empty($security_name)) wp_send_json_error($message);
         check_ajax_referer($security_name, 'security');
         if (!current_user_can('manage_woocommerce')) {
             wp_send_json_error($message);
