@@ -161,6 +161,10 @@ class Cart extends RestApi
             }
         }
         if ($this->isValidCartToTrack()) {
+            $cart_token = $this->retrieveCartToken();
+            if(empty($cart_token) && !empty($_POST['cart_token'])){
+                $this->setCartToken($_POST['cart_token']);
+            }
             $cart = $this->getUserCart();
             $encrypted_cart = $this->encryptData($cart);
             wp_send_json_success($encrypted_cart);
