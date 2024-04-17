@@ -2,10 +2,10 @@
 Contributors: retainful, flycart
 Tags: abandoned cart, cart abandonment, woocommerce, email marketing automation, coupon
 Requires at least: 4.6.1
-Tested up to: 6.4
-WC tested up to: 8.6
+Tested up to: 6.5
+WC tested up to: 8.7
 Requires PHP: 5.6
-Stable tag: 2.6.31
+Stable tag: 2.6.32
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -249,6 +249,10 @@ No. There is no charges for support.
 == Screenshots ==
 
 == Changelog ==
+= 2.6.32 =
+- Fix: Avoid duplicate cart instances for guest carts proactively
+- Improved: Order meta fallback streamlined
+
 = 2.6.31 =
 - Fix: Removed product page marketing consent
 - Added: Currency code for popup

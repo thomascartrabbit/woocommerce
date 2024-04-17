@@ -166,10 +166,21 @@ class Order extends RestApi
         if (!$order_placed_at && $this->isOrderHasValidOrderStatus($order_status)) {
             $order_placed_at = self::$woocommerce->getOrderPlacedDate($order);
             $order_placed_at = $this->processOrderPlaceDate($order_placed_at);
-            self::$woocommerce->setOrderMeta($order_id, $this->order_placed_date_key_for_db, $order_placed_at);
-            if ($this->isOrderInPendingRecovery($order_id)) {
-                $this->markOrderAsRecovered($order_id);
+            $order->update_meta_data($this->order_placed_date_key_for_db, $order_placed_at);
+            $is_order_pending_recovery = (bool) self::$woocommerce->getOrderMeta($order, $this->pending_recovery_key_for_db);
+
+            //mark the order as recovered
+            if ($is_order_pending_recovery) {
+                $is_order_recovered = (bool) self::$woocommerce->getOrderMeta($order, $this->order_recovered_key_for_db);
+                if ($is_order_recovered == false && self::$woocommerce->getOrderMeta($order, '_rnoc_recovered_by') == 1) {
+                    $order->delete_meta_data($this->pending_recovery_key_for_db);
+                    $order->update_meta_data($this->order_recovered_key_for_db, true);
+                    $order->add_order_note(__('Order recovered by Retainful.', RNOC_TEXT_DOMAIN));
+                    do_action('rnoc_abandoned_order_recovered', $order);
+                }
             }
+
+            $order->save();
         }
         $completed_at = (!empty($order_placed_at)) ? $this->formatToIso8601($order_placed_at) : NULL;
         return apply_filters('rnoc_order_completed_at', $completed_at, $order);
@@ -298,11 +309,8 @@ class Order extends RestApi
     {
         $selected_language = $language = '';
         //to get language from WPML language
-        if (!empty($order)) {
-            $order_id = self::$woocommerce->getOrderId($order);
-            if (!empty($order_id)) {
-                $language = get_post_meta($order_id, 'wpml_language', true);
-            }
+        if (is_object($order) && !empty($order)) {
+            $language = self::$woocommerce->getOrderMeta($order, 'wpml_language', true);
         }
         if ($language !== false && $language != '') {
             if (function_exists('icl_get_languages')) {
