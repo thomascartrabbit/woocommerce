@@ -250,8 +250,8 @@ No. There is no charges for support.
 
 == Changelog ==
 = 2.6.32 =
-- Fix: duplicate cart synchronize
-- Improved: HPOS order synchronize
+- Fix: Avoid duplicate cart instances for guest carts proactively
+- Improved: Order meta fallback streamlined
 
 = 2.6.31 =
 - Fix: Removed product page marketing consent
