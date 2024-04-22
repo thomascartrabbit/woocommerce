@@ -1017,8 +1017,7 @@ class Settings
         add_submenu_page('retainful_license', 'Connection', 'Connection', 'manage_woocommerce', 'retainful_license', array($this, 'retainfulLicensePage'));
         add_submenu_page('retainful_license', 'Settings', 'Settings', 'manage_woocommerce', 'retainful_settings', array($this, 'retainfulSettingsPage'));
         $settings = $this->getAdminSettings();
-        $page_slug = $this->slug . '_premium';
-        $permium_page_settings = get_option($page_slug, array());
+
         $is_next_order_disable = get_option('retainful_hide_next_order_coupon', 'no');
         if (!$this->isNextOrderCouponEnabled()) {
             if (($is_next_order_disable === 'no' || empty($is_next_order_disable)) && (empty($settings) || count($settings) < 3)) {
@@ -1026,6 +1025,8 @@ class Settings
             }
         }
 
+        $page_slug = $this->slug . '_premium';
+        $permium_page_settings = get_option($page_slug, array());
         $is_premium_feature_disable = get_option('retainful_hide_premium_feature', 'no');
         if (($is_premium_feature_disable === 'no' || empty($is_premium_feature_disable)) && empty($permium_page_settings)) {
             update_option('retainful_hide_premium_feature', 'yes');
