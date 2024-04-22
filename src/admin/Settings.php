@@ -1026,8 +1026,8 @@ class Settings
             }
         }
 
-        $is_next_order_disable = get_option('retainful_hide_premium_feature', 'no');
-        if (($is_next_order_disable === 'no' || empty($is_next_order_disable)) && empty($permium_page_settings)) {
+        $is_premium_feature_disable = get_option('retainful_hide_premium_feature', 'no');
+        if (($is_premium_feature_disable === 'no' || empty($is_premium_feature_disable)) && empty($permium_page_settings)) {
             update_option('retainful_hide_premium_feature', 'yes');
         }
 
