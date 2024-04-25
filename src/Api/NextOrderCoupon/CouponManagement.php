@@ -94,7 +94,7 @@ class CouponManagement
                         'date_expires' => (!empty($ruleParams['ends_at'])) ? strtotime($ruleParams['ends_at']) : null,
                         'usage_limit' => $ruleParams['usage_limit'],
                         'usage_limit_per_user' => $ruleParams['usage_limit_per_user'],
-                        'individual_use' => 'yes',
+                        'individual_use' => false,
                         'customer_email' => $ruleParams['customer_email'],
                         'product_ids' => array(),
                         'exclude_product_ids' => array(),
