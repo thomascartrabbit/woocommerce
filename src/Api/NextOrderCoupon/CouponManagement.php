@@ -50,7 +50,7 @@ class CouponManagement
         $requestParams = $request->get_params();
         $defaultRequestParams = array(
             'discount_rule' => array(),
-            'digest' => '',
+            'digest' => ''
         );
         $params = wp_parse_args($requestParams, $defaultRequestParams);
         $admin->logMessage($params, 'API coupon created request');
