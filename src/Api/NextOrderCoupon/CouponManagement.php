@@ -51,7 +51,6 @@ class CouponManagement
         $defaultRequestParams = array(
             'discount_rule' => array(),
             'digest' => '',
-            'exclude_sale_items' => ''
         );
         $params = wp_parse_args($requestParams, $defaultRequestParams);
         $admin->logMessage($params, 'API coupon created request');
@@ -101,7 +100,7 @@ class CouponManagement
                         'exclude_product_ids' => array(),
                         'product_categories' => array(),
                         'exclude_product_categories' => array(),
-                        'exclude_sale_items' => isset($params['exclude_sale_items']) && $params['exclude_sale_items'] == 'yes' ? $params['exclude_sale_items'] : 'no',
+                        'exclude_sale_items' => isset($ruleParams['exclude_sale_items']) && $ruleParams['exclude_sale_items'] == 'yes' ? $ruleParams['exclude_sale_items'] : 'no',
                         '_rnoc_shop_coupon_type' => 'retainful-referral'
                     );
                     if (isset($data['free_shipping']) && $data['free_shipping'] === 'yes') {
